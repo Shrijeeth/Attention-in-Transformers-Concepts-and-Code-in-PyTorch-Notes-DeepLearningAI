@@ -126,3 +126,84 @@
   Transformer's design aligns with GPU acceleration, enabling deep, large models.
 - **Generalization**
   The same attention principles apply beyond translation to many sequence tasks.
+
+## Beginner's Guide: Transformers and Attention
+
+A gentle, visual-first overview of what Transformers are and how attention works, with references for further reading.
+
+### What is a Transformer?
+
+The Transformer is a neural network architecture introduced in the 2017 paper “Attention Is All You Need” that processes sequences (like text) efficiently by using attention instead of recurrence or convolutions.
+
+![Transformer architecture diagram (Wikimedia Commons)](https://commons.wikimedia.org/wiki/Special:FilePath/Transformer%2C_full_architecture.png)
+
+- Source: [Attention Is All You Need (2017)](https://arxiv.org/abs/1706.03762) — arXiv
+- Visual walkthrough: [The Illustrated Transformer (Jay Alammar)](https://jalammar.github.io/illustrated-transformer/)
+
+### Transformers at a Glance
+
+| Component | What it does | Why it matters | Simple intuition |
+| --- | --- | --- | --- |
+| Word Embeddings | Convert tokens (words/subwords) into numeric vectors | Neural nets need numbers | “Lookup” a dense vector for each token |
+| Positional Encoding | Inject order information into embeddings | Word order changes meaning | Add patterns (e.g., sines/cosines) so the model knows positions |
+| Self-Attention | Lets each token “look at” other tokens | Captures relationships and context | Weighted averaging of other tokens’ information |
+| Feedforward Layers | Nonlinear transformation per token | Adds capacity beyond attention | Small MLP applied to each position |
+| Layer Norm + Residuals | Stabilize and ease training | Enable deeper networks | Keep signals well-scaled and trainable |
+
+### Types of Transformer Models
+
+| Model type | Context window | Typical tasks | Examples |
+| --- | --- | --- | --- |
+| Encoder-only | Bidirectional (looks left and right) | Understanding: classification, NER, sentence embeddings | BERT, RoBERTa |
+| Decoder-only | Left-to-right (causal, masked) | Generation: next-token prediction, chat, coding | GPT, Llama, Mistral |
+| Encoder–Decoder | Encoder understands input; decoder generates output using cross-attention | Seq2Seq: translation, summarization | T5, original Transformer |
+
+Further reading: [Hugging Face LLM Course — Architectures](https://huggingface.co/learn/llm-course/en/chapter1/6)
+
+### The Three Building Blocks (Beginner Version)
+
+1. Word Embedding: Maps each token to a vector of numbers. Example: “tell me about pizza” → vectors per token.
+2. Positional Encoding: Adds position info so “Squatch eats pizza” ≠ “Pizza eats Squatch”. Sinusoidal PE explainer: [Positional Encoding (sine/cosine) explained](https://kazemnejad.com/blog/transformer_architecture_positional_encoding/)
+3. Self-Attention (core idea): For each token, compute how related it is to every other token and use those relations as weights to mix others’ information into a new, context-aware representation. [Interactive demo (GPT‑2 attention)](https://poloclub.github.io/transformer-explainer/)
+
+### Self-Attention: Step by Step (Scaled Dot-Product)
+
+Given encoded tokens X (embeddings + positions):
+
+1. Create Queries, Keys, Values: Q = X·W_Q, K = X·W_K, V = X·W_V (learned weight matrices)
+2. Similarity scores: S = Q·K^T (dot products measure how related tokens are)
+3. Scale: S_scaled = S / sqrt(d_k) (helps keep values numerically stable)
+4. Row-wise Softmax: A = softmax_rows(S_scaled) (turn each row into percentages that sum to 1)
+5. Weighted sum of values: O = A·V (new context-aware representations)
+
+Links:
+
+- [Attention Is All You Need (arXiv)](https://arxiv.org/abs/1706.03762)
+- [PyTorch MultiheadAttention docs](https://docs.pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html)
+- [The Illustrated Transformer (visual guide)](https://jalammar.github.io/illustrated-transformer/)
+
+### Key Symbols and Terms
+
+| Symbol/Term | Meaning | Notes |
+| --- | --- | --- |
+| Q (Query) | What a token uses to look for relevant info | “What am I looking for?” |
+| K (Key) | What other tokens expose for being found | “How others can be found” |
+| V (Value) | The information carried by tokens | “What to take if a match is found” |
+| d_model | Embedding size per token | Often 256–4096+ |
+| d_k, d_v | Sizes for Q/K and V projections | Often d_model/num_heads |
+| softmax | Turns numbers into probabilities per row | Each row sums to 1 |
+
+### Practical Tips for Beginners
+
+- Start with encoder-only (BERT) for classification/embeddings, decoder-only (GPT) for generation.
+- Use pretrained checkpoints; fine-tune for your task.
+- Keep batch/sequence lengths moderate at first to control memory.
+- Inspect attention maps with interactive tools to build intuition.
+
+### More Resources
+
+- [Attention Is All You Need (paper)](https://arxiv.org/abs/1706.03762)
+- [BERT (paper)](https://arxiv.org/abs/1810.04805)
+- [Hugging Face course (Transformers)](https://huggingface.co/learn/llm-course)
+- [UvA DL Tutorial: Transformers and Multi-Head Attention](https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/tutorial6/Transformers_and_MHAttention.html)
+- [Karpathy “Zero to Hero”](https://karpathy.ai/zero-to-hero.html)
